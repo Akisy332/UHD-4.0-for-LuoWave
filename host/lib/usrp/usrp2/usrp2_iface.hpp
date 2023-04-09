@@ -50,6 +50,7 @@ public:
         USRP_N200_R4 = 201,
         USRP_N210    = 210,
         USRP_N210_R4 = 211,
+        USRP_N210P_R1 = 220, //luowave customered
         USRP_NXXX    = 0
     };
 

@@ -150,6 +150,7 @@ public:
         switch (_iface->get_rev()) {
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+            case usrp2_iface::USRP_N210P_R1:
                 _ad9510_regs.power_down_lvds_cmos_out7 = enb ? 0 : 1;
                 _ad9510_regs.lvds_cmos_select_out7 =
                     ad9510_regs_t::LVDS_CMOS_SELECT_OUT7_LVDS;
@@ -203,6 +204,7 @@ public:
         switch (_iface->get_rev()) {
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+            case usrp2_iface::USRP_N210P_R1:
                 _ad9510_regs.power_down_lvds_cmos_out5 = enb ? 0 : 1;
                 _ad9510_regs.lvds_cmos_select_out5 =
                     ad9510_regs_t::LVDS_CMOS_SELECT_OUT5_LVDS;

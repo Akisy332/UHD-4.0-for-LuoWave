@@ -8,6 +8,7 @@
 #include "codec_ctrl.hpp"
 #include "ad9777_regs.hpp"
 #include "ads62p44_regs.hpp"
+#include "ads42lb69_regs.hpp"
 #include "usrp2_regs.hpp"
 #include <uhd/exception.hpp>
 #include <uhd/utils/log.hpp>
@@ -73,26 +74,60 @@ public:
                 this->set_rx_analog_gain(1);
                 break;
 
-            case usrp2_iface::USRP_N200_R4:
-            case usrp2_iface::USRP_N210_R4:
-                _ads62p44_regs.reset = 1;
-                this->send_ads62p44_reg(0x00); // issue a reset to the ADC
-                // everything else should be pretty much default, i think
-                //_ads62p44_regs.decimation = DECIMATION_DECIMATE_1;
-                _ads62p44_regs.override = 1;
-                this->send_ads62p44_reg(0x14);
-                _ads62p44_regs.power_down       = ads62p44_regs_t::POWER_DOWN_NORMAL;
-                _ads62p44_regs.output_interface = ads62p44_regs_t::OUTPUT_INTERFACE_LVDS;
-                _ads62p44_regs.lvds_current     = ads62p44_regs_t::LVDS_CURRENT_2_5MA;
-                _ads62p44_regs.lvds_data_term   = ads62p44_regs_t::LVDS_DATA_TERM_100;
-                this->send_ads62p44_reg(0x11);
-                this->send_ads62p44_reg(0x12);
-                this->send_ads62p44_reg(0x14);
-                this->set_rx_analog_gain(1);
-                break;
-
-            case usrp2_iface::USRP_NXXX:
-                break;
+        case usrp2_iface::USRP_N200_R4:
+        case usrp2_iface::USRP_N210_R4:
+            _ads62p44_regs.reset = 1;
+            this->send_ads62p44_reg(0x00); // issue a reset to the ADC
+            // everything else should be pretty much default, i think
+            //_ads62p44_regs.decimation = DECIMATION_DECIMATE_1;
+            _ads62p44_regs.override = 1;
+            this->send_ads62p44_reg(0x14);
+            _ads62p44_regs.power_down       = ads62p44_regs_t::POWER_DOWN_NORMAL;
+            _ads62p44_regs.output_interface = ads62p44_regs_t::OUTPUT_INTERFACE_LVDS;
+            _ads62p44_regs.lvds_current     = ads62p44_regs_t::LVDS_CURRENT_2_5MA;
+            _ads62p44_regs.lvds_data_term   = ads62p44_regs_t::LVDS_DATA_TERM_100;
+            this->send_ads62p44_reg(0x11);
+            this->send_ads62p44_reg(0x12);
+            this->send_ads62p44_reg(0x14);
+            this->set_rx_analog_gain(1);
+            break;
+        case usrp2_iface::USRP_N210P_R1:
+            UHD_LOG_ERROR("-==[]==", "init ads42lb69");
+            _ads42lb69_regs.reset= 1;
+            _ads42lb69_regs.dis_ctl_pins= 1;
+            this->send_ads42lb69_reg(0x8);
+            this->send_ads42lb69_reg(0x6);
+            this->send_ads42lb69_reg(0x7);
+            //0x8设置DIS CTRL PINS为1
+            _ads42lb69_regs.reset= 0;
+            _ads42lb69_regs.data_format= 0;
+            this->send_ads42lb69_reg(0x8);
+            _ads42lb69_regs.cha_enable=1;
+            _ads42lb69_regs.chb_enable=1;
+            this->send_ads42lb69_reg(0xb);
+            this->send_ads42lb69_reg(0xc);
+            this->send_ads42lb69_reg(0xd);
+            this->send_ads42lb69_reg(0xf);
+            this->send_ads42lb69_reg(0x10);
+            this->send_ads42lb69_reg(0x11);
+            this->send_ads42lb69_reg(0x12);
+            this->send_ads42lb69_reg(0x13);
+            // _ads42lb69_regs.lvsd_clk_strength = 1;
+            // _ads42lb69_regs.lvsd_data_strength = 1;
+            this->send_ads42lb69_reg(0x14);
+            _ads42lb69_regs.ddr_qdr= 1;
+            this->send_ads42lb69_reg(0x15);
+            //设置ddr timing为0ps   
+            _ads42lb69_regs.ddr_output_timing = 0;
+            this->send_ads42lb69_reg(0x16);
+            // _ads42lb69_regs.lvds_clk_strength_enable = 1;
+            this->send_ads42lb69_reg(0x17);
+            this->send_ads42lb69_reg(0x18);
+            this->send_ads42lb69_reg(0x1f);
+            _ads42lb69_regs.pdn_chx= 0;
+            this->send_ads42lb69_reg(0x8);
+            break;
+        case usrp2_iface::USRP_NXXX: break;
         }
     }
 
@@ -109,18 +144,20 @@ public:
                     _iface->poke32(U2_REG_MISC_CTRL_ADC, U2_FLAG_MISC_CTRL_ADC_OFF);
                     break;
 
-                case usrp2_iface::USRP_N200:
-                case usrp2_iface::USRP_N210:
-                case usrp2_iface::USRP_N200_R4:
-                case usrp2_iface::USRP_N210_R4:
-                    // send a global power-down to the ADC here... it will get lifted on
-                    // reset
-                    _ads62p44_regs.power_down = ads62p44_regs_t::POWER_DOWN_GLOBAL_PD;
-                    this->send_ads62p44_reg(0x14);
-                    break;
+        case usrp2_iface::USRP_N200:
+        case usrp2_iface::USRP_N210:
+        case usrp2_iface::USRP_N200_R4:
+        case usrp2_iface::USRP_N210_R4:
+            _ads62p44_regs.power_down = ads62p44_regs_t::POWER_DOWN_GLOBAL_PD;
+            this->send_ads62p44_reg(0x14);
+            break;
+        case usrp2_iface::USRP_N210P_R1:
+            _ads42lb69_regs.pdn_chx= 3;
+            this->send_ads42lb69_reg(0x8);
+            break;
 
-                case usrp2_iface::USRP_NXXX:
-                    break;
+        case usrp2_iface::USRP_NXXX:
+             break;
             })
     }
 
@@ -154,15 +191,23 @@ public:
     }
 
     void set_rx_digital_gain(double gain)
-    { // fine digital gain
-        switch (_iface->get_rev()) {
-            case usrp2_iface::USRP_N200:
-            case usrp2_iface::USRP_N210:
-            case usrp2_iface::USRP_N200_R4:
-            case usrp2_iface::USRP_N210_R4:
-                _ads62p44_regs.fine_gain = int(gain / 0.5);
-                this->send_ads62p44_reg(0x17);
-                break;
+{  //fine digital gain
+        switch(_iface->get_rev()){
+        case usrp2_iface::USRP_N200:
+        case usrp2_iface::USRP_N210:
+        case usrp2_iface::USRP_N200_R4:
+        case usrp2_iface::USRP_N210_R4:
+            _ads62p44_regs.fine_gain = int(gain / 0.5);
+            this->send_ads62p44_reg(0x17);
+            break;
+        case usrp2_iface::USRP_N210P_R1:
+            //暂时不设置负数，所以+7，范围仍为0～6dB 
+            _ads42lb69_regs.cha_gain_a = int(gain / 0.5);
+            // UHD_LOG_ERROR("==[]==", "setting  ads42lb69 digital gain: "<< int(gain / 0.5));
+            this->send_ads42lb69_reg(0xb);
+            _ads42lb69_regs.cha_gain_b = int(gain / 0.5);
+            this->send_ads42lb69_reg(0xc);
+            break;
 
             default:
                 UHD_THROW_INVALID_CODE_PATH();
@@ -179,6 +224,8 @@ public:
                 _ads62p44_regs.gain_correction = int(gain / 0.05);
                 this->send_ads62p44_reg(0x1A);
                 break;
+        case usrp2_iface::USRP_N210P_R1:
+            break;
 
             default:
                 UHD_THROW_INVALID_CODE_PATH();
@@ -186,20 +233,18 @@ public:
     }
 
     void set_rx_analog_gain(bool /*gain*/)
-    { // turns on/off analog 3.5dB preamp
-        switch (_iface->get_rev()) {
-            case usrp2_iface::USRP_N200:
-            case usrp2_iface::USRP_N210:
-            case usrp2_iface::USRP_N200_R4:
-            case usrp2_iface::USRP_N210_R4:
-                _ads62p44_regs.coarse_gain = ads62p44_regs_t::
-                    COARSE_GAIN_3_5DB; // gain ? ads62p44_regs_t::COARSE_GAIN_3_5DB :
-                                       // ads62p44_regs_t::COARSE_GAIN_0DB;
-                this->send_ads62p44_reg(0x14);
-                break;
-
-            default:
-                UHD_THROW_INVALID_CODE_PATH();
+    { //turns on/off analog 3.5dB preamp
+        switch(_iface->get_rev()){
+        case usrp2_iface::USRP_N200:
+        case usrp2_iface::USRP_N210:
+        case usrp2_iface::USRP_N200_R4:
+        case usrp2_iface::USRP_N210_R4:
+            _ads62p44_regs.coarse_gain = ads62p44_regs_t::COARSE_GAIN_3_5DB;//gain ? ads62p44_regs_t::COARSE_GAIN_3_5DB : ads62p44_regs_t::COARSE_GAIN_0DB;
+            this->send_ads62p44_reg(0x14);
+            break;
+        case usrp2_iface::USRP_N210P_R1:
+            break;
+        default: UHD_THROW_INVALID_CODE_PATH();
         }
     }
 
@@ -211,6 +256,7 @@ public:
 private:
     ad9777_regs_t _ad9777_regs;
     ads62p44_regs_t _ads62p44_regs;
+    ads42lb69_regs_t _ads42lb69_regs;
     usrp2_iface::sptr _iface;
     uhd::spi_iface::sptr _spiface;
 
@@ -224,7 +270,17 @@ private:
     void send_ads62p44_reg(uint8_t addr)
     {
         uint16_t reg = _ads62p44_regs.get_write_reg(addr);
-        _spiface->write_spi(SPI_SS_ADS62P44, spi_config_t::EDGE_FALL, reg, 16);
+        _spiface->write_spi(
+            SPI_SS_ADS62P44, spi_config_t::EDGE_FALL,
+            reg, 16
+        );
+    }
+
+    void send_ads42lb69_reg(uint8_t addr)
+    {
+        uint16_t reg = _ads42lb69_regs.get_write_reg(addr);
+        UHD_LOG_ERROR("USRP2", "send_ads42lb69_reg: 0x" << std::hex << reg);
+        _spiface->write_spi(SPI_SS_ADS62P44, spi_config_t::EDGE_RISE, reg, 16);
     }
 };
 

@@ -343,6 +343,8 @@ public:
                 return USRP_N200_R4;
             case 0x0A11:
                 return USRP_N210_R4;
+            case 0x0B00:    //luowave customered, dec:  2816
+                return USRP_N210P_R1;
         }
         return USRP_NXXX; // unknown type
     }
@@ -362,6 +364,8 @@ public:
                 return "N200r4";
             case USRP_N210_R4:
                 return "N210r4";
+            case USRP_N210P_R1:
+                return "N210pr1";
             case USRP_NXXX:
                 return "N???";
         }
@@ -402,6 +406,9 @@ public:
                 break;
             case USRP_N210_R4:
                 fpga_image = "usrp_n210_r4_fpga.bin";
+                fw_image   = "usrp_n210_fw.bin";
+            case USRP_N210P_R1:
+                fpga_image = "usrp_n210p_r1_fpga.bin";
                 fw_image   = "usrp_n210_fw.bin";
                 break;
             default:

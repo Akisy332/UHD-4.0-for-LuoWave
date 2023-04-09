@@ -68,8 +68,11 @@ device_addrs_t usrp2_find(const device_addr_t& hint_)
 
     // Return an empty list of addresses when a resource is specified,
     // since a resource is intended for a different, non-USB, device.
-    if (hint.has_key("resource"))
+    if (hint.has_key_with_prefix("resource")) {
+        UHD_LOG_TRACE(
+            "USRP2 FIND", "Returning early, PCIe is not supported with usrp2 devices.");
         return usrp2_addrs;
+    }
 
     // if no address was specified, send a broadcast on each interface
     if (not hint.has_key("addr")) {
@@ -166,7 +169,7 @@ device_addrs_t usrp2_find(const device_addr_t& hint_)
             // filter the discovered device below by matching optional keys
             if ((not hint.has_key("name") or hint["name"] == new_addr["name"])
                 and (not hint.has_key("serial")
-                        or hint["serial"] == new_addr["serial"])) {
+                     or hint["serial"] == new_addr["serial"])) {
                 usrp2_addrs.push_back(new_addr);
             }
 
@@ -403,6 +406,9 @@ usrp2_impl::usrp2_impl(const device_addr_t& _device_addr)
             case usrp2_iface::USRP_N210_R4:
                 expected_fpga_compat_num = N200_FPGA_COMPAT_NUM;
                 break;
+            case usrp2_iface::USRP_N210P_R1:    //luowave customered
+                expected_fpga_compat_num = N200_FPGA_COMPAT_NUM;
+                break;
             default:
                 // handle case where the MB EEPROM is not programmed
                 if (fpga_major == USRP2_FPGA_COMPAT_NUM
@@ -455,6 +461,10 @@ usrp2_impl::usrp2_impl(const device_addr_t& _device_addr)
             case usrp2_iface::USRP_N210:
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+                _mbc[mb].wbiface = _mbc[mb].fifo_ctrl;
+                _mbc[mb].spiface = _mbc[mb].fifo_ctrl;
+                break;
+            case usrp2_iface::USRP_N210P_R1: //luowave customered
                 _mbc[mb].wbiface = _mbc[mb].fifo_ctrl;
                 _mbc[mb].spiface = _mbc[mb].fifo_ctrl;
                 break;
@@ -514,6 +524,17 @@ usrp2_impl::usrp2_impl(const device_addr_t& _device_addr)
                             std::placeholders::_1))
                     .set(0);
             } break;
+            case usrp2_iface::USRP_N210P_R1: {
+                _tree->create<std::string>(rx_codec_path / "name").set("ads42lb69");
+                _tree->create<meta_range_t>(rx_codec_path / "gains/digital/range")
+                    .set(meta_range_t(0, 6.0, 0.5));
+                _tree->create<double>(rx_codec_path / "gains/digital/value")
+                    .add_coerced_subscriber(
+                        std::bind(&usrp2_codec_ctrl::set_rx_digital_gain,
+                            _mbc[mb].codec,
+                            std::placeholders::_1))
+                    .set(0);
+            } break;
 
             case usrp2_iface::USRP2_REV3:
             case usrp2_iface::USRP2_REV4:
@@ -537,6 +558,7 @@ usrp2_impl::usrp2_impl(const device_addr_t& _device_addr)
             case usrp2_iface::USRP_N210:
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+            case usrp2_iface::USRP_N210P_R1:
                 break;
             default:
                 _mbc[mb].iface->pokefw(U2_FW_REG_HAS_GPSDO, dont_look_for_gpsdo);
@@ -755,6 +777,7 @@ usrp2_impl::usrp2_impl(const device_addr_t& _device_addr)
             case usrp2_iface::USRP_N210:
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+            case usrp2_iface::USRP_N210P_R1:
                 _tree->create<time_spec_t>(mb_path / "time/cmd")
                     .add_coerced_subscriber(std::bind(&usrp2_fifo_ctrl::set_time,
                         _mbc[mb].fifo_ctrl,
@@ -959,7 +982,8 @@ void usrp2_impl::update_clock_source(const std::string& mb, const std::string& s
         case usrp2_iface::USRP_N200:
         case usrp2_iface::USRP_N210:
         case usrp2_iface::USRP_N200_R4:
-        case usrp2_iface::USRP_N210_R4:
+        case usrp2_iface::USRP_N210_R4:        
+        case usrp2_iface::USRP_N210P_R1:
             if (source == "internal")
                 _mbc[mb].iface->poke32(U2_REG_MISC_CTRL_CLOCK, 0x12);
             else if (source == "external")
@@ -1003,6 +1027,7 @@ void usrp2_impl::update_clock_source(const std::string& mb, const std::string& s
             case usrp2_iface::USRP_N210:
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+            case usrp2_iface::USRP_N210P_R1:
                 _mbc[mb].clock->set_mimo_clock_delay(mimo_clock_delay_usrp_n2xx);
                 break;
 

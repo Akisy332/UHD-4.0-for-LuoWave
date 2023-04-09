@@ -42,6 +42,7 @@ public:
             case usrp2_iface::USRP_N210:
             case usrp2_iface::USRP_N200_R4:
             case usrp2_iface::USRP_N210_R4:
+            case usrp2_iface::USRP_N210P_R1:
                 exp    = 6;
                 adc    = 2;
                 serdes = 4;
