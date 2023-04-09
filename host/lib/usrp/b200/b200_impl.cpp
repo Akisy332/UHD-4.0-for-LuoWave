@@ -174,7 +174,6 @@ std::vector<usb_device_handle::sptr> get_b200_device_handles(const device_addr_t
 static device_addrs_t b200_find(const device_addr_t& hint)
 {
     device_addrs_t b200_addrs;
-
     // return an empty list of addresses when type is set to non-b200
     if (hint.has_key("type") and hint["type"] != "b200")
         return b200_addrs;
@@ -339,6 +338,8 @@ b200_impl::b200_impl(
         vid_pid_pair_list.push_back(
             usb_device_handle::vid_pid_pair_t(vid, B205MINI_PRODUCT_ID));
         vid_pid_pair_list.push_back(
+            usb_device_handle::vid_pid_pair_t(vid, B205MINI_PLUS_PRODUCT_ID));
+        vid_pid_pair_list.push_back(
             usb_device_handle::vid_pid_pair_t(vid, B200_PRODUCT_NI_ID));
         vid_pid_pair_list.push_back(
             usb_device_handle::vid_pid_pair_t(vid, B210_PRODUCT_NI_ID));
@@ -358,6 +359,8 @@ b200_impl::b200_impl(
             usb_device_handle::vid_pid_pair_t(B200_VENDOR_ID, B200MINI_PRODUCT_ID));
         vid_pid_pair_list.push_back(
             usb_device_handle::vid_pid_pair_t(B200_VENDOR_ID, B205MINI_PRODUCT_ID));
+        vid_pid_pair_list.push_back(
+            usb_device_handle::vid_pid_pair_t(B200_VENDOR_ID, B205MINI_PLUS_PRODUCT_ID));
         vid_pid_pair_list.push_back(
             usb_device_handle::vid_pid_pair_t(B200_VENDOR_NI_ID, B200_PRODUCT_NI_ID));
         vid_pid_pair_list.push_back(
@@ -419,7 +422,7 @@ b200_impl::b200_impl(
 
     UHD_LOGGER_INFO("B200") << "Detected Device: " << B2XX_STR_NAMES[_product];
 
-    _gpsdo_capable = (not(_product == B200MINI or _product == B205MINI));
+    _gpsdo_capable = (not(_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS));
 
     ////////////////////////////////////////////////////////////////////
     // Set up frontend mapping
@@ -438,7 +441,7 @@ b200_impl::b200_impl(
     _fe2                 = 0;
     _gpio_state.swap_atr = 1;
     // Unswapped setup:
-    if (_product == B200MINI or _product == B205MINI
+    if (_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS
         or (_product == B200 and _revision >= 5)) {
         _fe1                 = 0; // map radio0 to FE1
         _fe2                 = 1; // map radio1 to FE2
@@ -543,7 +546,7 @@ b200_impl::b200_impl(
     _tree->create<std::string>("/name").set("B-Series Device");
     _tree->create<std::string>(mb_path / "name").set(product_name);
     _tree->create<std::string>(mb_path / "codename")
-        .set((_product == B200MINI or _product == B205MINI) ? "Pixie" : "Sasquatch");
+        .set((_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS) ? "Pixie" : "Sasquatch");
 
     ////////////////////////////////////////////////////////////////////
     // Create data transport
@@ -608,7 +611,7 @@ b200_impl::b200_impl(
     // create time and clock control objects
     ////////////////////////////////////////////////////////////////////
     _spi_iface = b200_local_spi_core::make(_local_ctrl);
-    if (not(_product == B200MINI or _product == B205MINI)) {
+    if (not(_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS)) {
         _adf4001_iface = std::make_shared<b200_ref_pll_ctrl>(_spi_iface);
     }
 
@@ -618,7 +621,7 @@ b200_impl::b200_impl(
     UHD_LOGGER_INFO("B200") << "Initialize CODEC control...";
     reset_codec();
     ad9361_params::sptr client_settings;
-    if (_product == B200MINI or _product == B205MINI) {
+    if (_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS) {
         client_settings = std::make_shared<b2xxmini_ad9361_client_t>();
     } else {
         client_settings = std::make_shared<b200_ad9361_client_t>();
@@ -984,7 +987,7 @@ void b200_impl::setup_radio(const size_t dspno)
     // b2xx_power_cal_$dir_$ant, depending on the form factor.
     // $dir is either "tx" or "rx", and "ant" is either "tx_rx" or "rx2" (i.e.,
     // sanitized version of the antenna names that work in filenames.
-    const std::string cal_key_base = (_product == B200MINI or _product == B205MINI)
+    const std::string cal_key_base = (_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS)
                                          ? "b2xxmini_pwr_"
                                          : "b2xx_pwr_";
     for (direction_t dir : std::vector<direction_t>{RX_DIRECTION, TX_DIRECTION}) {
@@ -1203,7 +1206,7 @@ void b200_impl::check_fpga_compat(void)
         throw uhd::runtime_error(
             "b200::check_fpga_compat signature register readback failed");
 
-    const uint16_t expected = ((_product == B200MINI or _product == B205MINI)
+    const uint16_t expected = ((_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS)
                                    ? B205_FPGA_COMPAT_NUM
                                    : B200_FPGA_COMPAT_NUM);
     if (compat_major != expected) {
@@ -1225,7 +1228,7 @@ void b200_impl::check_fpga_compat(void)
 void b200_impl::update_clock_source(const std::string& source)
 {
     // For B205, ref_sel selects whether or not to lock to the external clock source
-    if (_product == B200MINI or _product == B205MINI) {
+    if (_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS) {
         if (source == "external" and _time_source == EXTERNAL) {
             throw uhd::value_error(
                 "external reference cannot be both a clock source and a time source");
@@ -1274,7 +1277,7 @@ void b200_impl::update_clock_source(const std::string& source)
 
 void b200_impl::update_time_source(const std::string& source)
 {
-    if ((_product == B200MINI or _product == B205MINI) and source == "external"
+    if ((_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS) and source == "external"
         and _gpio_state.ref_sel == 1) {
         throw uhd::value_error(
             "external reference cannot be both a time source and a clock source");
@@ -1319,7 +1322,7 @@ void b200_impl::sync_times()
 void b200_impl::update_bandsel(const std::string& which, double freq)
 {
     // B205 does not have bandsels
-    if (_product == B200MINI or _product == B205MINI) {
+    if (_product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS) {
         return;
     }
 

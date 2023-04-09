@@ -100,6 +100,8 @@ static std::vector<uhd::transport::usb_device_handle::vid_pid_pair_t> b200_vid_p
         uhd::transport::usb_device_handle::vid_pid_pair_t(
             B200_VENDOR_ID, B205MINI_PRODUCT_ID))(
         uhd::transport::usb_device_handle::vid_pid_pair_t(
+            B200_VENDOR_ID, B205MINI_PLUS_PRODUCT_ID))(
+        uhd::transport::usb_device_handle::vid_pid_pair_t(
             B200_VENDOR_NI_ID, B200_PRODUCT_NI_ID))(
         uhd::transport::usb_device_handle::vid_pid_pair_t(
             B200_VENDOR_NI_ID, B210_PRODUCT_NI_ID));
