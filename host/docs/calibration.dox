@@ -1,0 +1,135 @@
+/*! \page page_calibration Device Calibration
+
+\tableofcontents
+
+\section calibration_self Self-Calibration
+
+UHD software comes with several self-calibration utilities for
+minimizing IQ imbalance and DC offset. These utilities perform
+calibration sweeps using transmit leakage into the receive path (special
+equipment is not required). The results from a calibration are written
+to a file in the user's home directory. UHD software will
+automatically apply corrections at runtime when the user re-tunes the
+daughterboard LO. Calibration results are specific to an individual RF
+board.
+
+<b>Note:</b> When a calibration table is present, and the user wishes to
+override the calibration settings through the API: the user should
+re-apply the desired setting every time the LO is re-tuned.
+
+UHD software comes with the following calibration utilities:
+
+-   **uhd_cal_rx_iq_balance:** - minimizes RX IQ imbalance vs. LO
+    frequency
+-   **uhd_cal_tx_dc_offset:** - minimizes TX DC offset vs. LO
+    frequency
+-   **uhd_cal_tx_iq_balance:** - minimizes TX IQ imbalance vs. LO
+    frequency
+
+The following RF frontends are supported by the self-calibration
+utilities:
+
+-   RFX Series transceiver boards
+-   WBX Series transceiver boards
+-   SBX Series transceiver boards
+-   CBX Series transceiver boards
+-   UBX Series transceiver boards
+-   USRP N320
+
+\subsection calibration_self_utils Calibration Utilities
+
+UHD software installs the calibration utilities into
+`<install-path>/bin`. **Disconnect** any external hardware from the
+RF antenna ports, and run the following from the command line. Each
+utility will take several minutes to complete:
+
+    uhd_cal_rx_iq_balance --verbose --args=<optional device args>
+    uhd_cal_tx_iq_balance --verbose --args=<optional device args>
+    uhd_cal_tx_dc_offset --verbose --args=<optional device args>
+
+See the output given by `--help` for more advanced options, such as
+manually choosing the frequency range and step size for the sweeps.
+
+<b>Note:</b> Your daughterboard needs a serial number to run a calibration
+utility. Some older daughterboards may not have a serial number. If this
+is the case, run the following command to burn a serial number into the
+daughterboard's EEPROM:
+
+    <install dir>/lib/uhd/utils/usrp_burn_db_eeprom --ser=<desired serial> --args=<optional device args>
+
+\subsection calibration_data Calibration Data
+
+By default, calibration files are stored in the user's home/application
+directory (`$XDG_DATA_HOME`):
+
+-   **Linux:** `${HOME}/.local/share/uhd/cal/`
+-   **Windows:** `%LOCALAPPDATA%\uhd\cal\`
+
+Calibration files are binary files with a `.cal` file extension.
+
+If you would like to specify a custom directory, you can do so with the
+`$UHD_CAL_DATA_PATH` environment variable.
+
+Calibration files can easily be moved from one machine to another by copying the
+"cal" directory, or individual files therein.  Re-running a calibration utility
+will replace the existing calibration file. The old calibration file will be
+renamed so it may be recovered by the user.
+
+\subsection modify_cal_data Modify Calibration Data
+
+There might be reasons to analyse or modify the calibration data outside UHD's
+calibration process. Because the data is stored using FlatBuffers this can be
+done without relying on UHD. UHD provides all FlatBuffers schema files in
+`<install-path>/share/uhd/cal`.
+
+First, install FlatBuffers. The package can be obtained from
+https://google.github.io/flatbuffers/.
+Once installed, `.cal` files can be converted to JSON using
+
+	flatc --strict-json -t <install dir>/share/uhd/cal/<foo>_cal.fbs -- <data>.cal
+	
+where `<foo>_cal.fbs` is the scheme file used for the data,
+e.g. `pwr_cal.fbs` for power calibration. `data.cal` is a calibration file in
+your working directory. This will generate a `<data>.json` in the same
+directory.
+
+The JSON data can be converted back to binary using
+
+	flatc -b <install dir>/include/uhd/cal/<foo>_cal.fbs <data>.json
+	
+This generates a `<data>.cal` that can be read by the calibration routines
+of UHD.
+	
+\subsection calibration_data_csv Converting UHD 3.x calibration data to UHD 4
+
+Older versions of UHD used a CSV-based format for storing calbration data for
+IQ imbalance and DC offset correction on some devices (e.g., X300, N200
+motherboards and WBX/SBX/CBX/UBX daughterboards).
+
+Going forward, all calibration data is stored as binary, to facilitate storing
+it on device's flash memory, among other reasons. Running the `uhd_cal_*`
+utilities will automatically generate the calibration data in the new format.
+
+To convert existing calbration data to the new format, use the convert_cal_data.py
+utility. By default, it will convert all existing data. Use `convert_cal_data.py --help`
+to get a full list of command line options.
+The tool is installed with the other utilities, for example into `/usr/share/lib/uhd/utils`,
+depending on your OS and CMake settings.
+
+
+\subsection ignore_cal_file Ignoring Calibration Files
+
+At runtime, the user can choose to ignore a daughterboard's calibration file by
+adding "ignore-cal-file" to the arguments. With the UHD API, it can be done as
+follows:
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~{.cpp}
+    auto usrp = uhd::usrp::multi_usrp::make("type=x300,ignore-cal-file=1");
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Using tx_waveforms as an example, the user can apply this argument as follows:
+
+    tx_waveforms --args="addr=192.168.10.2,ignore-cal-file=1" --freq=100e6 --rate=1e6
+
+*/
+// vim:ft=doxygen:

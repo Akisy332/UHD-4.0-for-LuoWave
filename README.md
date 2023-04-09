@@ -1,39 +1,81 @@
-# UHD-4-0-LuoWave
+# USRP Hardware Driver (UHD™) Software
 
-#### 介绍
-{**以下是 Gitee 平台说明，您可以替换此简介**
-Gitee 是 OSCHINA 推出的基于 Git 的代码托管平台（同时支持 SVN）。专为开发者提供稳定、高效、安全的云端软件开发协作平台
-无论是个人、团队、或是企业，都能够用 Gitee 实现代码托管、项目管理、协作开发。企业项目请看 [https://gitee.com/enterprises](https://gitee.com/enterprises)}
+Welcome to the UHD™ software distribution! UHD is the free & open-source
+software driver and API for the Universal Software Radio Peripheral (USRP™) SDR
+platform, created and sold by Ettus Research.
 
-#### 软件架构
-软件架构说明
+UHD supports all Ettus Research USRP™ hardware, including all motherboards and
+daughterboards, and the combinations thereof.
 
+## Documentation
 
-#### 安装教程
+For technical documentation related to USRP™ hardware or UHD system
+design, check out the [UHD and USRP Manual](http://files.ettus.com/manual/).
+That is where you can find
+[Installation Instructions](http://files.ettus.com/manual/page_install.html),
+help on how to
+[build UHD from source](http://files.ettus.com/manual/page_build_guide.html) on
+different platforms, development guidelines and reference documentation as well
+as device usage guidance.
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+Additionally, be sure to check out the Ettus Research
+[FAQ](https://kb.ettus.com/Technical_FAQ), and the
+[Knowledge Base](http://kb.ettus.com) for useful application notes and
+tutorials.
 
-#### 使用说明
+## OS Support
 
-1.  xxxx
-2.  xxxx
-3.  xxxx
+UHD is primarily developed on Linux, but we also test and support the following
+operating systems.
 
-#### 参与贡献
+* Linux (Fedora and Ubuntu)
+* Mac OS X (Intel)
+* Windows 10
 
-1.  Fork 本仓库
-2.  新建 Feat_xxx 分支
-3.  提交代码
-4.  新建 Pull Request
+Other operating systems will most likely work, too, but are not officially
+supported.
 
+## Applications
 
-#### 特技
+UHD can be used to build stand-alone applications with USRP™ hardware, or with
+third-party applications. Some common toolkits / frameworks are:
 
-1.  使用 Readme\_XXX.md 来支持不同的语言，例如 Readme\_en.md, Readme\_zh.md
-2.  Gitee 官方博客 [blog.gitee.com](https://blog.gitee.com)
-3.  你可以 [https://gitee.com/explore](https://gitee.com/explore) 这个地址来了解 Gitee 上的优秀开源项目
-4.  [GVP](https://gitee.com/gvp) 全称是 Gitee 最有价值开源项目，是综合评定出的优秀开源项目
-5.  Gitee 官方提供的使用手册 [https://gitee.com/help](https://gitee.com/help)
-6.  Gitee 封面人物是一档用来展示 Gitee 会员风采的栏目 [https://gitee.com/gitee-stars/](https://gitee.com/gitee-stars/)
+* [GNU Radio](http://gnuradio.org/)
+* [NI LabVIEW](http://www.ni.com/download/ni-usrp-1.3/4711/en/)
+* [MathWorks Simulink](http://www.mathworks.com/discovery/sdr/usrp.html)
+* [REDHAWK](https://redhawksdr.org/)
+* [OpenBTS GSM](http://openbts.org)
+* [Osmocom GSM](http://osmocom.org)
+* [Amarisoft LTE](http://www.amarisoft.com/products-lte-ue-ots-sdr-pcie)
+* [Software Radio Systems LTE](http://www.softwareradiosystems.com/products)
+
+## Directories
+
+__host/__
+
+The source code for the user-space driver.
+
+__mpm/__
+
+The source code for the module peripheral manager (MPM). This is code that is
+run on embedded devices.
+
+__firmware/__
+
+The source code for all microprocessors in USRP hardware.
+
+__fpga/__
+
+The source code for the UHD FPGA images.
+
+__images/__
+
+This contains the package builder for FPGA and firmware images.
+We provide other tools to download image packages, the scripts in here
+are mainly relevant for UHD maintainers and -developers.
+
+__tools/__
+
+Additional tools, mainly for debugging purposes. See the readme-file
+in that directory for more details on the individual tools.
+
