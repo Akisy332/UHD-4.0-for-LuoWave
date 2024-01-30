@@ -255,7 +255,7 @@ uhd::usrp::subdev_spec_t b200_impl::coerce_subdev_spec(
     //
     // Any other spec is probably illegal and will be caught by
     // validate_subdev_spec().
-    if (spec.size() and (_product == B200 or _product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS)
+    if (spec.size() and (_product == B200 or _product == B200MINI or _product == B205MINI or _product == B205MINI_PLUS or _product == B205MINI_75T or _product == B205MINI_100T)
         and spec[0].sd_name == "B") {
         spec[0].sd_name = "A";
     }

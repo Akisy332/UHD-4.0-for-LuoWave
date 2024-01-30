@@ -17,7 +17,7 @@
 #include <boost/assign/list_of.hpp>
 #include <memory>
 
-enum b200_product_t { B200, B210, B200MINI, B205MINI,B205MINI_PLUS };
+enum b200_product_t { B200, B210, B200MINI, B205MINI, B205MINI_PLUS, B205MINI_75T, B205MINI_100T, B210_PLUS};
 
 // These are actual USB PIDs (not Ettus Product IDs)
 const static uint16_t B200_VENDOR_ID      = 0x2500;
@@ -26,6 +26,9 @@ const static uint16_t B200_PRODUCT_ID     = 0x0020;
 const static uint16_t B200MINI_PRODUCT_ID = 0x0021;
 const static uint16_t B205MINI_PRODUCT_ID = 0x0022;
 const static uint16_t B205MINI_PLUS_PRODUCT_ID = 0x0023;
+const static uint16_t B205MINI_75T_PRODUCT_ID = 0x0024;
+const static uint16_t B205MINI_100T_PRODUCT_ID = 0x0025;
+const static uint16_t B210_PLUS_PRODUCT_ID = 0x0026;
 const static uint16_t B200_PRODUCT_NI_ID  = 0x7813;
 const static uint16_t B210_PRODUCT_NI_ID  = 0x7814;
 const static uint16_t FX3_VID             = 0x04b4;
@@ -35,7 +38,9 @@ const static uint16_t FX3_REENUM_PID      = 0x00f0;
 //! Map the USB PID to the product (only for PIDs that map to a single product)
 static const uhd::dict<uint16_t, b200_product_t> B2XX_PID_TO_PRODUCT =
     boost::assign::map_list_of(B200_PRODUCT_NI_ID, B200)(B210_PRODUCT_NI_ID, B210)(
-        B200MINI_PRODUCT_ID, B200MINI)(B205MINI_PRODUCT_ID, B205MINI)(B205MINI_PLUS_PRODUCT_ID, B205MINI_PLUS);
+        B200MINI_PRODUCT_ID, B200MINI)(B205MINI_PRODUCT_ID, B205MINI)(B205MINI_PLUS_PRODUCT_ID, B205MINI_PLUS)(
+            B205MINI_75T_PRODUCT_ID, B205MINI_75T)(B205MINI_100T_PRODUCT_ID, B205MINI_100T)
+            (B210_PLUS_PRODUCT_ID, B210_PLUS);
 
 static const std::string B200_FW_FILE_NAME = "usrp_b200_fw.hex";
 static const std::string B200_BL_FILE_NAME = "usrp_b200_bl.img";
@@ -44,17 +49,21 @@ static const std::string B200_BL_FILE_NAME = "usrp_b200_bl.img";
 static const uhd::dict<uint16_t, b200_product_t> B2XX_PRODUCT_ID =
     boost::assign::map_list_of(0x0001, B200)(0x7737, B200)(B200_PRODUCT_NI_ID, B200)(
         0x0002, B210)(0x7738, B210)(B210_PRODUCT_NI_ID, B210)(0x0003, B200MINI)(
-        0x7739, B200MINI)(0x0004, B205MINI)(0x773a, B205MINI)(0x0005, B205MINI_PLUS)(0x773b, B205MINI_PLUS);
+        0x7739, B200MINI)(0x0004, B205MINI)(0x773a, B205MINI)(0x0005, B205MINI_PLUS)(0x773b, B205MINI_PLUS)
         // b205mini_plus should has different 0x773b, need to research more. TODO
+        (0x0006, B205MINI_75T)(0x773c, B205MINI_75T)(0x0007, B205MINI_100T)(0x773d, B205MINI_100T)
+        (0x0008, B210_PLUS)(0x773e, B210_PLUS);
 
 static const uhd::dict<b200_product_t, std::string> B2XX_STR_NAMES =
     boost::assign::map_list_of(B200, "B200")(B210, "B210")(B200MINI, "B200mini")(
-        B205MINI, "B205mini")(B205MINI_PLUS, "B205mini_plus");
+        B205MINI, "B205mini")(B205MINI_PLUS, "B205mini_plus")(B205MINI_75T, "B205mini_75t")(B205MINI_100T, "B205mini_100t")
+        (B210_PLUS, "B210_plus");
 
 static const uhd::dict<b200_product_t, std::string> B2XX_FPGA_FILE_NAME =
     boost::assign::map_list_of(B200, "usrp_b200_fpga.bin")(B210, "usrp_b210_fpga.bin")(
-        B200MINI, "usrp_b200mini_fpga.bin")(B205MINI, "usrp_b205mini_fpga.bin")(B205MINI_PLUS, "usrp_b205mini_plus_fpga.bin");
-
+        B200MINI, "usrp_b200mini_fpga.bin")(B205MINI, "usrp_b205mini_fpga.bin")(B205MINI_PLUS, "usrp_b205mini_plus_fpga.bin")
+        (B205MINI_75T, "usrp_b205mini_75t_fpga.bin")(B205MINI_100T, "usrp_b205mini_100t_fpga.bin")(B210_PLUS, "usrp_b210_plus_fpga.bin");
+        //FPGAbin文件名暂定。还需要再根据实际文件名修改
 
 class UHD_API b200_iface : uhd::noncopyable, public virtual uhd::i2c_iface
 {
