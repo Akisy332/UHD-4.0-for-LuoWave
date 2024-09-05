@@ -7,5 +7,20 @@ sudo ldconfig
 cd host
 mkdir build
 cd build
-cmake ../
-make -j4
+sudo cmake ../
+sudo make -j4
+sudo make test
+sudo make install
+sudo ldconfig
+sudo 
+
+sudo uhd_images_downloader
+cd ../images
+sudo cp usrp_b205mini_75t_fpga.bin /usr/local/share/uhd/images
+sudo cp usrp_b205mini_100t_fpga.bin /usr/local/share/uhd/images
+sudo cp usrp_b205mini_200t_fpga.bin /usr/local/share/uhd/images
+sudo cp usrp_b205mini_plus_fpga.bin /usr/local/share/uhd/images
+sudo cp usrp_b210_100t_fpga.bin /usr/local/share/uhd/images
+sudo cp usrp_b210_plus_fpga.bin /usr/local/share/uhd/images
+
+sudo uhd_find_devices
